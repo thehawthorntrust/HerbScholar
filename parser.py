@@ -28,12 +28,11 @@ from io import BytesIO
 
 HERBAL_TERMS = {"Phytotherapy", "Plants, Medicinal", "Herbal Medicine"}
 
-BASELINE_URL = "https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/pubmed24n0001.xml.gz"
 
 
 def download_baseline_file():
     print("Downloading baseline file...")
-    response = requests.get(BASELINE_URL)
+    response = requests.get(download_url)
     response.raise_for_status()
     return BytesIO(response.content)
 
