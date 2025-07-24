@@ -1,4 +1,25 @@
 # parser.py
+
+import requests
+import re
+
+BASELINE_URL = "https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/"
+
+response = requests.get(BASELINE_URL)
+response.raise_for_status()
+
+# Find all baseline filenames like pubmed24nXXXX.xml.gz
+files = re.findall(r'href="(pubmed24n\d{4}\.xml\.gz)"', response.text)
+
+if not files:
+    raise Exception("No baseline files found")
+
+latest_file = sorted(files)[-1]  # get last filename alphabetically (latest)
+download_url = BASELINE_URL + latest_file
+
+print("Latest baseline file:", latest_file)
+print("Download URL:", download_url)
+
 import requests
 import gzip
 import xml.etree.ElementTree as ET
