@@ -9,7 +9,7 @@ response = requests.get(BASELINE_URL)
 response.raise_for_status()
 
 # Find all baseline filenames like pubmed24nXXXX.xml.gz
-files = re.findall(r'href="(pubmed24n\d{4}\.xml\.gz)"', response.text)
+files = [line.strip() for line in lines if re.match(r'^pubmed24n\d{4}\.xml\.gz$', line.strip())]
 
 if not files:
     raise Exception("No baseline files found")
