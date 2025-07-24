@@ -1,6 +1,7 @@
 # parser.py
 
 import requests
+from bs4 import BeautifulSoup
 import re
 
 BASELINE_URL = "https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/"
@@ -8,17 +9,23 @@ BASELINE_URL = "https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/"
 response = requests.get(BASELINE_URL)
 response.raise_for_status()
 
-# Find all baseline filenames like pubmed24nXXXX.xml.gz
-files = [line.strip() for line in lines if re.match(r'^pubmed24n\d{4}\.xml\.gz$', line.strip())]
+soup = BeautifulSoup(response.text, "html.parser")
+
+files = []
+for link in soup.find_all('a', href=True):
+    href = link['href']
+    if re.match(r'^pubmed24n\d{4}\.xml\.gz$', href):
+        files.append(href)
 
 if not files:
     raise Exception("No baseline files found")
 
-latest_file = sorted(files)[-1]  # get last filename alphabetically (latest)
+latest_file = sorted(files)[-1]
 download_url = BASELINE_URL + latest_file
 
 print("Latest baseline file:", latest_file)
 print("Download URL:", download_url)
+
 
 import requests
 import gzip
