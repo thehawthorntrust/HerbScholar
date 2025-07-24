@@ -1,0 +1,40 @@
+import os
+os.makedirs(".github/workflows", exist_ok=True)
+
+update_yaml = '''
+name: Update HerbScholar Dataset
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Run monthly
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install requests
+
+    - name: Run parser
+      run: python parser.py
+
+    - name: Commit filtered data
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@users.noreply.github.com"
+        git add filtered_articles.json search_index.json index.html
+        git commit -m "Automated update" || echo "No changes to commit"
+        git push
+'''
+
+with open(".github/workflows/update.yml", "w", encoding="utf-8") as f:
+    f.write(update_yaml)
