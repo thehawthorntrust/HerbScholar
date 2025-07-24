@@ -1,0 +1,56 @@
+# index.html
+html_code = '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>HerbScholar Search</title>
+  <script src="https://cdn.jsdelivr.net/npm/lunr/lunr.min.js"></script>
+</head>
+<body>
+  <h1>HerbScholar</h1>
+  <input type="search" id="searchBox" placeholder="Search herbal medicine articles..." style="width: 300px;">
+  <ul id="results"></ul>
+
+  <script>
+    let idx, articles;
+
+    async function loadData() {
+      const [indexRes, articlesRes] = await Promise.all([
+        fetch('search_index.json'),
+        fetch('filtered_articles.json')
+      ]);
+      const indexJson = await indexRes.json();
+      articles = await articlesRes.json();
+      idx = lunr(function () {
+        this.ref('id');
+        this.field('title');
+        this.field('abstract');
+        indexJson.documents.forEach(doc => this.add(doc));
+      });
+    }
+
+    function search(query) {
+      const results = idx.search(query);
+      const ul = document.getElementById('results');
+      ul.innerHTML = '';
+      for (const r of results) {
+        const art = articles[r.ref];
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${art.title}</strong><br>${art.abstract.slice(0, 150)}...`;
+        ul.appendChild(li);
+      }
+    }
+
+    document.getElementById('searchBox').addEventListener('input', e => {
+      search(e.target.value);
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
+'''
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_code)
